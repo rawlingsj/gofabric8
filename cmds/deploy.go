@@ -213,12 +213,13 @@ func NewCmdDeploy(f *cmdutil.Factory) *cobra.Command {
 					printAddServiceAccount(c, f, "fluentd")
 					printAddServiceAccount(c, f, "registry")
 				} else {
-					r, err := verifyRestrictedSecurityContextConstraints(c, f)
-					printResult("SecurityContextConstraints restricted", r, err)
-					r, err = deployFabric8SecurityContextConstraints(c, f, ns)
-					printResult("SecurityContextConstraints fabric8", r, err)
-					r, err = deployFabric8SASSecurityContextConstraints(c, f, ns)
-					printResult("SecurityContextConstraints "+Fabric8SASSCC, r, err)
+					// unable to create SCCs and assign roles when installing on OpenShift Dedicated
+					// r, err := verifyRestrictedSecurityContextConstraints(c, f)
+					// printResult("SecurityContextConstraints restricted", r, err)
+					// r, err = deployFabric8SecurityContextConstraints(c, f, ns)
+					// printResult("SecurityContextConstraints fabric8", r, err)
+					// r, err = deployFabric8SASSecurityContextConstraints(c, f, ns)
+					// printResult("SecurityContextConstraints "+Fabric8SASSCC, r, err)
 
 					printAddClusterRoleToUser(oc, f, "cluster-admin", "system:serviceaccount:"+ns+":fabric8")
 					printAddClusterRoleToUser(oc, f, "cluster-admin", "system:serviceaccount:"+ns+":jenkins")
