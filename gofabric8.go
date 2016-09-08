@@ -16,8 +16,13 @@
 package main
 
 import (
+	"os"
+
 	commands "github.com/fabric8io/gofabric8/cmds"
+	"github.com/jimmidyson/minishift/pkg/minikube/update"
+	"github.com/kubernetes/minikube/pkg/minikube/config"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 )
 
@@ -33,6 +38,9 @@ func main() {
 								Find more information at http://fabric8.io.`,
 		Run: runHelp,
 	}
+
+	viper.SetDefault(config.WantUpdateNotification, true)
+	update.MaybeUpdate(os.Stdout, "fabric8io", "gofabric8", "")
 
 	cmds.PersistentFlags().String("fabric8-version", "latest", "fabric8 version")
 	cmds.PersistentFlags().BoolP("yes", "y", false, "assume yes")

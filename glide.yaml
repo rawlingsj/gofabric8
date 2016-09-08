@@ -53,3 +53,7 @@ import:
   subpackages:
   - difflib
 - package: github.com/pkg/browser
+- package: github.com/jimmidyson/minishift
+- package: github.com/google/go-github
+  subpackages:
+  - github
