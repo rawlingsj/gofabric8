@@ -54,19 +54,19 @@ var (
 )
 
 func MaybeUpdateFromGithub(output io.Writer) {
-	MaybeUpdate(output, githubOwner, githubRepo, lastUpdateCheckFilePath)
+	MaybeUpdate(output, githubOwner, githubRepo, githubRepo, lastUpdateCheckFilePath)
 }
 
-func MaybeUpdate(output io.Writer, githubOwner, githubRepo, lastUpdatePath string) {
+func MaybeUpdate(output io.Writer, githubOwner, githubRepo, binaryName, lastUpdatePath string) {
 
-	downloadBinary := githubRepo + "-" + runtime.GOOS + "-" + runtime.GOARCH
+	downloadBinary := binaryName + "-" + runtime.GOOS + "-" + runtime.GOARCH
 	updateLinkPrefix := "https://github.com/" + githubOwner + "/" + githubRepo + "/releases/tag/" + version.VersionPrefix
 	downloadLinkFormat := "https://github.com/" + githubOwner + "/" + githubRepo + "/releases/download/v%s/%s"
 
 	if !shouldCheckURLVersion(lastUpdatePath) {
 		return
 	}
-	latestVersion, err := getLatestVersionFromGitHub(githubOwner, githubRepo)
+	latestVersion, err := GetLatestVersionFromGitHub(githubOwner, githubRepo)
 	if err != nil {
 		glog.Errorln(err)
 		return
@@ -106,7 +106,7 @@ func shouldCheckURLVersion(filePath string) bool {
 	return true
 }
 
-func getLatestVersionFromGitHub(githubOwner, githubRepo string) (semver.Version, error) {
+func GetLatestVersionFromGitHub(githubOwner, githubRepo string) (semver.Version, error) {
 	if githubClient == nil {
 		token := os.Getenv("GH_TOKEN")
 		var tc *http.Client

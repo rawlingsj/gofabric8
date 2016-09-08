@@ -40,7 +40,7 @@ func main() {
 	}
 
 	viper.SetDefault(config.WantUpdateNotification, true)
-	update.MaybeUpdate(os.Stdout, "fabric8io", "gofabric8", "")
+	update.MaybeUpdate(os.Stdout, "fabric8io", "gofabric8", "gofabric8", "")
 
 	cmds.PersistentFlags().String("fabric8-version", "latest", "fabric8 version")
 	cmds.PersistentFlags().BoolP("yes", "y", false, "assume yes")
@@ -53,6 +53,7 @@ func main() {
 	cmds.AddCommand(commands.NewCmdRun(f))
 	cmds.AddCommand(commands.NewCmdPull(f))
 	cmds.AddCommand(commands.NewCmdIngress(f))
+	cmds.AddCommand(commands.NewCmdInstall(f))
 	cmds.AddCommand(commands.NewCmdRoutes(f))
 	cmds.AddCommand(commands.NewCmdSecrets(f))
 	cmds.AddCommand(commands.NewCmdService(f))
