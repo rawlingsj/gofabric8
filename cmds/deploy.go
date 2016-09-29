@@ -71,17 +71,8 @@ const (
 	consoleKubernetesMetadataUrl = "io/fabric8/apps/console-kubernetes/maven-metadata.xml"
 	baseConsoleKubernetesUrl     = "io/fabric8/apps/console-kubernetes/%[1]s/console-kubernetes-%[1]s-kubernetes.json"
 
-	devopsTemplatesDistroUrl = "io/fabric8/forge/distro/distro/%[1]s/distro-%[1]s-templates.zip"
-	devOpsMetadataUrl        = "io/fabric8/forge/distro/distro/maven-metadata.xml"
-
-	kubeflixTemplatesDistroUrl = "io/fabric8/kubeflix/distro/distro/%[1]s/distro-%[1]s-templates.zip"
-	kubeflixMetadataUrl        = "io/fabric8/kubeflix/distro/distro/maven-metadata.xml"
-
-	zipkinTemplatesDistroUrl = "io/fabric8/zipkin/packages/distro/%[1]s/distro-%[1]s-templates.zip"
-	zipkinMetadataUrl        = "io/fabric8/zipkin/packages/distro/maven-metadata.xml"
-
-	iPaaSTemplatesDistroUrl = "io/fabric8/ipaas/distro/distro/%[1]s/distro-%[1]s-templates.zip"
-	iPaaSMetadataUrl        = "io/fabric8/ipaas/distro/distro/maven-metadata.xml"
+	iPaaSTemplatesDistroUrl = "io/fabric8/ipaas/platform/distro/distro/%[1]s/distro-%[1]s-templates.zip"
+	iPaaSMetadataUrl        = "io/fabric8/ipaas/platform/distro/distro/maven-metadata.xml"
 
 	Fabric8SCC    = "fabric8"
 	Fabric8SASSCC = "fabric8-sa-group"
@@ -313,9 +304,6 @@ func deploy(f *cmdutil.Factory, d DefaultFabric8Deployment) {
 
 		consoleVersion := f8ConsoleVersion(mavenRepo, d.versionConsole, typeOfMaster)
 		versioniPaaS := versionForUrl(d.versioniPaaS, urlJoin(mavenRepo, iPaaSMetadataUrl))
-		versionDevOps := versionForUrl(d.versionDevOps, urlJoin(mavenRepo, devOpsMetadataUrl))
-		versionKubeflix := versionForUrl(d.versionKubeflix, urlJoin(mavenRepo, kubeflixMetadataUrl))
-		versionZipkin := versionForUrl(d.versionZipkin, urlJoin(mavenRepo, zipkinMetadataUrl))
 
 		util.Warnf("\nStarting fabric8 console deployment using %s...\n\n", consoleVersion)
 
@@ -430,10 +418,7 @@ func deploy(f *cmdutil.Factory, d DefaultFabric8Deployment) {
 
 		if d.templates {
 			println("Installing templates!")
-			printError("Install DevOps templates", installTemplates(c, oc, f, versionDevOps, urlJoin(mavenRepo, devopsTemplatesDistroUrl), dockerRegistry, arch, domain))
 			printError("Install iPaaS templates", installTemplates(c, oc, f, versioniPaaS, urlJoin(mavenRepo, iPaaSTemplatesDistroUrl), dockerRegistry, arch, domain))
-			printError("Install Kubeflix templates", installTemplates(c, oc, f, versionKubeflix, urlJoin(mavenRepo, kubeflixTemplatesDistroUrl), dockerRegistry, arch, domain))
-			printError("Install Zipkin templates", installTemplates(c, oc, f, versionZipkin, urlJoin(mavenRepo, zipkinTemplatesDistroUrl), dockerRegistry, arch, domain))
 		} else {
 			printError("Ignoring the deploy of templates", nil)
 		}
@@ -810,6 +795,9 @@ func processTemplate(tmpl *tapi.Template, ns string, domain string, apiserver st
 	}, tapi.Parameter{
 		Name:  "OAUTH_AUTHORIZE_PORT",
 		Value: port,
+	}, tapi.Parameter{
+		Name:  "HAWTIO_BRANDING_PLUGIN",
+		Value: "redhat-branding",
 	})
 
 	errorList := p.Process(tmpl)
@@ -1396,8 +1384,8 @@ func deployFabric8SecurityContextConstraints(c *k8sclient.Client, f *cmdutil.Fac
 	}
 	_, err = c.SecurityContextConstraints().Create(&scc)
 	if err != nil {
-		util.Fatalf("Cannot create SecurityContextConstraints: %v\n", err)
-		util.Fatalf("Failed to create SecurityContextConstraints %v in namespace %s: %v\n", scc, ns, err)
+		util.Errorf("Cannot create SecurityContextConstraints: %v\n", err)
+		util.Errorf("Failed to create SecurityContextConstraints %v in namespace %s: %v\n", scc, ns, err)
 		return Failure, err
 	}
 	util.Infof("SecurityContextConstraints %s is setup correctly\n", name)
@@ -1428,8 +1416,8 @@ func deployFabric8SASSecurityContextConstraints(c *k8sclient.Client, f *cmdutil.
 	}
 	_, err = c.SecurityContextConstraints().Create(&scc)
 	if err != nil {
-		util.Fatalf("Cannot create SecurityContextConstraints: %v\n", err)
-		util.Fatalf("Failed to create SecurityContextConstraints %v in namespace %s: %v\n", scc, ns, err)
+		util.Errorf("Cannot create SecurityContextConstraints: %v\n", err)
+		util.Errorf("Failed to create SecurityContextConstraints %v in namespace %s: %v\n", scc, ns, err)
 		return Failure, err
 	}
 	util.Infof("SecurityContextConstraints %s is setup correctly\n", name)
@@ -1476,8 +1464,7 @@ func verifyRestrictedSecurityContextConstraints(c *k8sclient.Client, f *cmdutil.
 		rc.RunAsUser.Type = kapi.RunAsUserStrategyRunAsAny
 		_, err = c.SecurityContextConstraints().Update(rc)
 		if err != nil {
-			util.Fatalf("Failed to update SecurityContextConstraints %v in namespace %s: %v\n", rc, ns, err)
-			return Failure, err
+			util.Errorf("Failed to update SecurityContextConstraints %v in namespace %s: %v\n", rc, ns, err)
 		}
 		util.Infof("SecurityContextConstraints %s is updated to enable fabric8\n", name)
 	} else {
